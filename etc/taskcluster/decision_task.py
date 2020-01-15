@@ -12,8 +12,10 @@ from decisionlib import CONFIG, SHARED
 def main(task_for):
     decisionlib.Task.with_repo_bundle = lambda s, *args, **kwargs: s.with_repo(*args, *kwargs)
     commits = [
-        "dcdf910a259005bbdd993089d12f9f7eca9a26db",
-        "de610e4d755005376bbd9a4468e24e6c576a3f47",
+        "bf96a942529a2411cfbff48ee5cac0784d6bc927",
+        "cd4f7846c5d39b69f8d7431cec9548aec5c8e457",
+        "13be5daa9dac6f912daeee1827e964eefeb63613",
+        "c385953c97d5f1eb0190487c314274c02904b7f7",
     ]
     CONFIG.initial_git_sha = CONFIG.git_sha
     # with decisionlib.make_repo_bundle():
@@ -150,8 +152,8 @@ unix_build_env = {
 }
 linux_build_env = {
     "SHELL": "/bin/dash",  # For SpiderMonkey’s build system
-    "CCACHE": "sccache",
-    "RUSTC_WRAPPER": "sccache",
+    #"CCACHE": "sccache",
+    #"RUSTC_WRAPPER": "sccache",
     "CC": "clang",
     "CXX": "clang++",
     "SCCACHE_IDLE_TIMEOUT": "1200",
@@ -686,7 +688,7 @@ def macos_wpt():
 
 
 def linux_wpt():
-    linux_wpt_common(total_chunks=10, layout_2020=False)
+    linux_wpt_common(total_chunks=4, layout_2020=False)
 
 
 def linux_wpt_layout_2020():
@@ -698,7 +700,7 @@ def linux_wpt_common(total_chunks, layout_2020):
     def linux_run_task(name):
         return linux_task(name).with_dockerfile(dockerfile_path("run")).with_repo_bundle()
     wpt_chunks("Linux x64", linux_run_task, release_build_task, repo_dir="/repo",
-               processes=20, total_chunks=total_chunks, layout_2020=layout_2020)
+               processes=10, total_chunks=total_chunks, layout_2020=layout_2020, chunks=[1,2,3,4])
 
 
 def wpt_chunks(platform, make_chunk_task, build_task, total_chunks, processes,
@@ -782,11 +784,12 @@ def wpt_chunks(platform, make_chunk_task, build_task, total_chunks, processes,
                     --total-chunks "$TOTAL_CHUNKS" \
                     --this-chunk "$THIS_CHUNK" \
                     --log-raw test-wpt.log \
-                    --log-servojson wpt-jsonsummary.log \
+                    --log-errorsummary wpt-errorsummary.log \
                     --always-succeed \
                     | cat
+                grep -v 'Network error' wpt-errorsummary.log >filtered-wpt-errorsummary.log || true
                 ./mach filter-intermittents \
-                    wpt-jsonsummary.log \
+                    filtered-wpt-errorsummary.log \
                     --log-intermittents intermittents.log \
                     --log-filteredsummary filtered-wpt-errorsummary.log \
                     --tracker-api default \
@@ -886,7 +889,7 @@ def linux_build_task(name, *, build_env=build_env, install_rustc_dev=True):
     )
     if install_rustc_dev:
         # required by components/script_plugins:
-        task = task.with_script("rustup component add rustc-dev")
+        task = task.with_script("rustup component add rustc-dev || true")
     return task
 
 
