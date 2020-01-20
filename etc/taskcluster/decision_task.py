@@ -8,15 +8,19 @@ import os.path
 import decisionlib
 from decisionlib import CONFIG, SHARED
 
+after_wpt_output_change = [
+    "bf96a942529a2411cfbff48ee5cac0784d6bc927",
+    "cd4f7846c5d39b69f8d7431cec9548aec5c8e457",
+    "fe6f5a1e87a083ba0c46cfefb7ae6fdcc5bb3cad",
+]
+
+before_wpt_output_change = [
+    "c385953c97d5f1eb0190487c314274c02904b7f7",
+]
 
 def main(task_for):
     decisionlib.Task.with_repo_bundle = lambda s, *args, **kwargs: s.with_repo(*args, *kwargs)
-    commits = [
-        "bf96a942529a2411cfbff48ee5cac0784d6bc927",
-        "cd4f7846c5d39b69f8d7431cec9548aec5c8e457",
-        "fe6f5a1e87a083ba0c46cfefb7ae6fdcc5bb3cad",
-        "c385953c97d5f1eb0190487c314274c02904b7f7",
-    ]
+    commits = after_wpt_output_change + before_wpt_output_change
     CONFIG.initial_git_sha = CONFIG.git_sha
     # with decisionlib.make_repo_bundle():
     for CONFIG.git_sha in commits:
@@ -776,25 +780,46 @@ def wpt_chunks(platform, make_chunk_task, build_task, total_chunks, processes,
                     --reporter-api default
             """)
         else:
-            task.with_script("""
-                ./mach test-wpt \
-                    --release \
-                    $WPT_ARGS \
-                    --processes $PROCESSES \
-                    --total-chunks "$TOTAL_CHUNKS" \
-                    --this-chunk "$THIS_CHUNK" \
-                    --log-raw test-wpt.log \
-                    --log-errorsummary wpt-errorsummary.log \
-                    --always-succeed \
-                    | cat
-                grep -v 'Network error' wpt-errorsummary.log | grep -v '\"test_groups\"' >filtered-wpt-errorsummary.log || true
-                ./mach filter-intermittents \
-                    filtered-wpt-errorsummary.log \
-                    --log-intermittents intermittents.log \
-                    --log-filteredsummary filtered-wpt-errorsummary.log \
-                    --tracker-api default \
-                    --reporter-api default
-            """)
+            if CONFIG.git_sha in after_wpt_output_change:
+                task.with_script("""
+                    ./mach test-wpt \
+                        --release \
+                        $WPT_ARGS \
+                        --processes $PROCESSES \
+                        --total-chunks "$TOTAL_CHUNKS" \
+                        --this-chunk "$THIS_CHUNK" \
+                        --log-raw test-wpt.log \
+                        --log-servojson wpt-jsonsummary.log \
+                        --always-succeed \
+                        | cat
+                    grep -v 'Network error' wpt-jsonsummary.log | grep -v 'text_decoration_underline_subpx_a.html' >tmp-filtered-wpt-jsonsummary.log || true
+                    ./mach filter-intermittents \
+                        tmp-filtered-wpt-jsonsummary.log \
+                        --log-intermittents intermittents.log \
+                        --log-filteredsummary filtered-wpt-errorsummary.log \
+                        --tracker-api default \
+                        --reporter-api default
+                """)
+            else:
+                task.with_script("""
+                    ./mach test-wpt \
+                        --release \
+                        $WPT_ARGS \
+                        --processes $PROCESSES \
+                        --total-chunks "$TOTAL_CHUNKS" \
+                        --this-chunk "$THIS_CHUNK" \
+                        --log-raw test-wpt.log \
+                        --log-errorsummary wpt-errorsummary.log \
+                        --always-succeed \
+                        | cat
+                    grep -v 'Network error' wpt-errorsummary.log | grep -v 'text_decoration_underline_subpx_a.html' | grep -v '\"test_groups\"' >tmp-filtered-wpt-errorsummary.log || true
+                    ./mach filter-intermittents \
+                        tmp-filtered-wpt-errorsummary.log \
+                        --log-intermittents intermittents.log \
+                        --log-filteredsummary filtered-wpt-errorsummary.log \
+                        --tracker-api default \
+                        --reporter-api default
+                """)
         task.with_artifacts(*[
             "%s/%s" % (repo_dir, word)
             for script in task.scripts
