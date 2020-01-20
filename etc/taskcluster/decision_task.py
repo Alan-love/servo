@@ -11,10 +11,10 @@ from decisionlib import CONFIG, SHARED
 after_wpt_output_change = [
     "bf96a942529a2411cfbff48ee5cac0784d6bc927",
     "cd4f7846c5d39b69f8d7431cec9548aec5c8e457",
-    "59b9992d44859ecc63acaae82ec344dda236aa92",
 ]
 
 before_wpt_output_change = [
+    "59b9992d44859ecc63acaae82ec344dda236aa92",
     "c385953c97d5f1eb0190487c314274c02904b7f7",
 ]
 
