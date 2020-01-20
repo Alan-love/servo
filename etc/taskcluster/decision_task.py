@@ -14,7 +14,7 @@ def main(task_for):
     commits = [
         "bf96a942529a2411cfbff48ee5cac0784d6bc927",
         "cd4f7846c5d39b69f8d7431cec9548aec5c8e457",
-        "13be5daa9dac6f912daeee1827e964eefeb63613",
+        "fe6f5a1e87a083ba0c46cfefb7ae6fdcc5bb3cad",
         "c385953c97d5f1eb0190487c314274c02904b7f7",
     ]
     CONFIG.initial_git_sha = CONFIG.git_sha
@@ -787,7 +787,7 @@ def wpt_chunks(platform, make_chunk_task, build_task, total_chunks, processes,
                     --log-errorsummary wpt-errorsummary.log \
                     --always-succeed \
                     | cat
-                grep -v 'Network error' wpt-errorsummary.log >filtered-wpt-errorsummary.log || true
+                grep -v 'Network error' wpt-errorsummary.log | grep -v '\"test_groups\"' >filtered-wpt-errorsummary.log || true
                 ./mach filter-intermittents \
                     filtered-wpt-errorsummary.log \
                     --log-intermittents intermittents.log \
