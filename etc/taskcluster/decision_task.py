@@ -792,7 +792,9 @@ def wpt_chunks(platform, make_chunk_task, build_task, total_chunks, processes,
                         --log-servojson wpt-jsonsummary.log \
                         --always-succeed \
                         | cat
-                    grep -v 'Network error' wpt-jsonsummary.log | grep -v 'text_decoration_underline_subpx_a.html' >tmp-filtered-wpt-jsonsummary.log || true
+                    grep -v 'Network error' wpt-jsonsummary.log | \
+                    grep -v '/dom/nodes/Document-contentType/contentType/contenttype_' | \
+                    grep -v 'text_decoration_underline_subpx_a.html' >tmp-filtered-wpt-jsonsummary.log || true
                     ./mach filter-intermittents \
                         tmp-filtered-wpt-jsonsummary.log \
                         --log-intermittents intermittents.log \
@@ -812,7 +814,10 @@ def wpt_chunks(platform, make_chunk_task, build_task, total_chunks, processes,
                         --log-errorsummary wpt-errorsummary.log \
                         --always-succeed \
                         | cat
-                    grep -v 'Network error' wpt-errorsummary.log | grep -v 'text_decoration_underline_subpx_a.html' | grep -v '\"test_groups\"' >tmp-filtered-wpt-errorsummary.log || true
+                    grep -v 'Network error' wpt-errorsummary.log | \
+                    grep -v 'text_decoration_underline_subpx_a.html' | \
+                    grep -v '/dom/nodes/Document-contentType/contentType/contenttype_' | \
+                    grep -v '\"test_groups\"' >tmp-filtered-wpt-errorsummary.log || true
                     ./mach filter-intermittents \
                         tmp-filtered-wpt-errorsummary.log \
                         --log-intermittents intermittents.log \
