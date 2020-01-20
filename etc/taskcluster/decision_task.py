@@ -659,7 +659,6 @@ def linux_release_build_with_debug_assertions(layout_2020):
             time ./mach rustc -V
             time ./mach fetch
             ./mach build --release --with-debug-assertions %s -p servo
-            ./etc/ci/lockfile_changed.sh
             tar -czf /target.tar.gz \
                 target/release/servo \
                 target/release/build/osmesa-src-*/output \
@@ -794,6 +793,7 @@ def wpt_chunks(platform, make_chunk_task, build_task, total_chunks, processes,
                         | cat
                     grep -v 'Network error' wpt-jsonsummary.log | \
                     grep -v '/dom/nodes/Document-contentType/contentType/contenttype_' | \
+                    grep -v '/_mozilla/mozilla/fetch_cannot_overwhelm_system.window.html' | \
                     grep -v 'text_decoration_underline_subpx_a.html' >tmp-filtered-wpt-jsonsummary.log || true
                     ./mach filter-intermittents \
                         tmp-filtered-wpt-jsonsummary.log \
@@ -817,6 +817,7 @@ def wpt_chunks(platform, make_chunk_task, build_task, total_chunks, processes,
                     grep -v 'Network error' wpt-errorsummary.log | \
                     grep -v 'text_decoration_underline_subpx_a.html' | \
                     grep -v '/dom/nodes/Document-contentType/contentType/contenttype_' | \
+                    grep -v '/_mozilla/mozilla/fetch_cannot_overwhelm_system.window.html' | \
                     grep -v '\"test_groups\"' >tmp-filtered-wpt-errorsummary.log || true
                     ./mach filter-intermittents \
                         tmp-filtered-wpt-errorsummary.log \
