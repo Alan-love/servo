@@ -54,7 +54,7 @@ Please select your operating system:
 
 Xcode version 10.2 or above is recommended.
 
-##### On macOS (Homebrew)
+##### On macOS(Intel based or ARM based) (Homebrew)
 
 NOTE: run these steps after you've cloned the project locally.
 
@@ -176,6 +176,14 @@ With the following environment variable set:
 ```sh
 export LIBCLANG_PATH=$(llvm-config --prefix)/lib64
 ```
+
+#### On nixOS Linux
+
+```sh
+nix-shell etc/shell.nix
+```
+
+You will need to run this in every shell before running mach.
 
 #### On Windows (MSVC)
 
